@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-// ── PNC Logo (inline SVG, cleaned of Inkscape metadata) ──────────────────────
-const PNCLogo = ({ height = 32 }) => (
+const PNCLogo = ({ height = 28 }) => (
   <svg height={height} viewBox="0 0 54.239584 16.404167" xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
     <g transform="translate(-224.69559,-274.24421)">
       <g transform="matrix(0.35277777,0,0,-0.35277777,77.705894,295.95648)">
@@ -28,138 +27,458 @@ const PNCLogo = ({ height = 32 }) => (
 );
 
 const accounts = [
-  {
-    id: "A001", name: "Margin Account", acctNum: "X1234",
-    settledCash: 5200, unsettledCash: -1340,
-    cashMarginFullyMarginable: 48000, cashMarginNonMarginable: 12800,
-    marketValue: 142500, marginDebit: 28000, marginEquity: 114500, marginEquityPct: 80.4,
-    interestRate: 7.25, pendingMarginInterest: -312,
-    buyingPowerCash: 18200, buyingPowerMargin: 36400,
-    houseSurplus: 28600, exchangeSurplus: 34200, smaSurplus: 9200, dtc: 6800,
-    houseReqDollar: 42750, houseReqPct: 30,
-    regT: 50, house: 30, exchange: 25,
-    cshCRBal: 18200, hseSurpAmt: 28600,
-    hasCall: true, callAmount: 4200, callDueDate: "March 14, 2026", isDriver: true,
-  },
-  {
-    id: "A002", name: "IRA Margin", acctNum: "X7743",
-    settledCash: 3100, unsettledCash: 820,
-    cashMarginFullyMarginable: 22000, cashMarginNonMarginable: 5400,
-    marketValue: 67800, marginDebit: 0, marginEquity: 67800, marginEquityPct: 100,
-    interestRate: 6.9, pendingMarginInterest: 0,
-    buyingPowerCash: 12400, buyingPowerMargin: 24800,
-    houseSurplus: 47460, exchangeSurplus: 50850, smaSurplus: 4100, dtc: 3200,
-    houseReqDollar: 20340, houseReqPct: 30,
-    regT: 50, house: 30, exchange: 25,
-    cshCRBal: 12400, hseSurpAmt: 47460,
-    hasCall: false, callAmount: 0, callDueDate: null, isDriver: false,
-  },
+  { id:"A001", name:"Margin Account", acctNum:"X1234", settledCash:5200, unsettledCash:-1340, cashMarginFullyMarginable:48000, cashMarginNonMarginable:12800, marketValue:142500, marginDebit:28000, marginEquity:114500, marginEquityPct:80.4, interestRate:7.25, pendingMarginInterest:-312, buyingPowerCash:18200, buyingPowerMargin:36400, houseSurplus:28600, exchangeSurplus:34200, smaSurplus:9200, dtc:6800, houseReqDollar:42750, houseReqPct:30, regT:50, house:30, exchange:25, cshCRBal:18200, hseSurpAmt:28600, hasCall:true, callAmount:4200, callDueDate:"March 14, 2026", isDriver:true, isMarginAccount:true },
+  { id:"A002", name:"IRA Margin", acctNum:"X7743", settledCash:3100, unsettledCash:820, cashMarginFullyMarginable:22000, cashMarginNonMarginable:5400, marketValue:67800, marginDebit:0, marginEquity:67800, marginEquityPct:100, interestRate:6.9, pendingMarginInterest:0, buyingPowerCash:12400, buyingPowerMargin:24800, houseSurplus:47460, exchangeSurplus:50850, smaSurplus:4100, dtc:3200, houseReqDollar:20340, houseReqPct:30, regT:50, house:30, exchange:25, cshCRBal:12400, hseSurpAmt:47460, hasCall:false, callAmount:0, callDueDate:null, isDriver:false, isMarginAccount:true },
+  { id:"A003", name:"Brokerage Account", acctNum:"X9901", settledCash:8400, unsettledCash:200, cashMarginFullyMarginable:0, cashMarginNonMarginable:0, marketValue:54200, marginDebit:0, marginEquity:54200, marginEquityPct:100, interestRate:0, pendingMarginInterest:0, buyingPowerCash:8400, buyingPowerMargin:8400, houseSurplus:0, exchangeSurplus:0, smaSurplus:0, dtc:0, houseReqDollar:0, houseReqPct:0, regT:0, house:0, exchange:0, cshCRBal:8400, hseSurpAmt:0, hasCall:false, callAmount:0, callDueDate:null, isDriver:false, isMarginAccount:false },
 ];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const fmt = (n) => {
-  const abs = Math.abs(n);
-  const str = abs >= 1000 ? abs.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : abs.toFixed(2);
-  return n < 0 ? `-$${str}` : `$${str}`;
-};
-const fmtShort = (n) => {
-  const abs = Math.abs(n);
-  const str = abs.toLocaleString();
-  return n < 0 ? `-$${str}` : `$${str}`;
-};
+const fmt = (n) => { const abs = Math.abs(n); const s = abs.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); return n < 0 ? `-$${s}` : `$${s}`; };
 const pct = (n) => `${n}%`;
-const tabs = ["Dashboard", "Margin Profile", "Transfers", "Education"];
+const tabs = ["Dashboard","Margin Profile","Transfers"];
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const C = {
-  navy: "#003366",
-  blue: "#0069aa",
-  blueLight: "#e8f2f9",
-  blueMid: "#cce0f0",
-  orange: "#f58025",
-  orangeLight: "#fff4ec",
-  red: "#cc2200",
-  redLight: "#fff0ee",
-  green: "#1a7a3c",
-  greenLight: "#e8f5ee",
-  gray1: "#f5f6f8",
-  gray2: "#e8eaed",
-  gray3: "#c5cad3",
-  gray4: "#8a93a0",
-  gray5: "#4a5360",
-  text: "#1a2332",
-  white: "#ffffff",
-  border: "#dde1e7",
-};
+const C = { navy:"#003366", blue:"#0069aa", blueLight:"#e8f2f9", blueMid:"#d0e8f5", orange:"#f58025", orangeLight:"#fff4ec", orangeMid:"#fde8d0", red:"#cc2200", redLight:"#fff0ee", green:"#1a7a3c", greenLight:"#e8f5ee", gray1:"#f5f6f8", gray2:"#e8eaed", gray3:"#c5cad3", gray4:"#8a93a0", gray5:"#4a5360", text:"#1a2332", white:"#ffffff", border:"#dde1e7" };
+const Sbtn = (v="primary",disabled=false) => ({ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 20px", borderRadius:4, fontSize:13, fontWeight:600, cursor:disabled?"not-allowed":"pointer", border:v==="outline"?`1px solid ${C.blue}`:"none", background:v==="primary"?C.blue:v==="orange"?C.orange:v==="outline"?C.white:C.gray1, color:v==="primary"||v==="orange"?C.white:v==="outline"?C.blue:C.gray5, opacity:disabled?0.45:1 });
+const Slabel = { fontSize:11, fontWeight:600, color:C.gray4, textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:6 };
+const Scard = { background:C.white, border:`1px solid ${C.border}`, borderRadius:8, padding:"20px 24px" };
 
-const S = {
-  card: { background: C.white, border: `1px solid ${C.border}`, borderRadius: 8, padding: "20px 24px" },
-  label: { fontSize: 11, fontWeight: 600, color: C.gray4, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 },
-  value: { fontSize: 22, fontWeight: 700, color: C.text, fontFamily: "monospace" },
-  btn: (variant = "primary") => ({
-    display: "inline-flex", alignItems: "center", gap: 6,
-    padding: "8px 18px", borderRadius: 4, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none",
-    background: variant === "primary" ? C.blue : variant === "orange" ? C.orange : variant === "outline" ? C.white : C.gray1,
-    color: variant === "primary" ? C.white : variant === "orange" ? C.white : variant === "outline" ? C.blue : C.gray5,
-    ...(variant === "outline" ? { border: `1px solid ${C.blue}` } : {}),
-  }),
-};
-
-// ── Tooltip ───────────────────────────────────────────────────────────────────
 function Tip({ text, children }) {
   const [show, setShow] = useState(false);
-  const ref = useState(null);
   return (
-    <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
-      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+    <span style={{position:"relative",display:"inline-flex",alignItems:"center"}} onMouseEnter={()=>setShow(true)} onMouseLeave={()=>setShow(false)}>
       {children}
-      {show && (
-        <span style={{ position: "absolute", bottom: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: C.navy, color: C.white, fontSize: 12, padding: "7px 11px", borderRadius: 6, width: 210, whiteSpace: "normal", lineHeight: 1.5, zIndex: 999, pointerEvents: "none", boxShadow: "0 4px 16px rgba(0,0,0,0.18)" }}>
-          {text}
-        </span>
-      )}
+      {show && <span style={{position:"absolute",bottom:"calc(100% + 6px)",left:"50%",transform:"translateX(-50%)",background:C.navy,color:C.white,fontSize:12,padding:"8px 12px",borderRadius:6,width:220,whiteSpace:"normal",lineHeight:1.5,zIndex:999,pointerEvents:"none",boxShadow:"0 4px 16px rgba(0,0,0,0.18)"}}>{text}</span>}
     </span>
   );
 }
 
-// ── Shared components ─────────────────────────────────────────────────────────
-function Badge({ children, color = C.blue }) {
-  return <span style={{ background: color + "18", color, fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, border: `1px solid ${color}30`, letterSpacing: "0.05em" }}>{children}</span>;
+function Badge({ children, color=C.blue }) {
+  return <span style={{background:color+"18",color,fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20,border:`1px solid ${color}30`,letterSpacing:"0.03em"}}>{children}</span>;
 }
 
-function DataRow({ label, value, tip, positive, negative, highlight, sub }) {
+function Alert({ type="error", children }) {
+  const m = {error:{bg:C.redLight,border:C.red},warning:{bg:C.orangeLight,border:C.orange},info:{bg:C.blueLight,border:C.blue},success:{bg:C.greenLight,border:C.green}}[type];
+  return <div style={{background:m.bg,border:`1px solid ${m.border}`,borderLeft:`4px solid ${m.border}`,borderRadius:6,padding:"12px 16px",marginBottom:16,fontSize:13,color:C.text,lineHeight:1.6}}>{children}</div>;
+}
+
+function DataRow({ label, value, tip, positive, negative, highlight }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: `1px solid ${C.gray2}`, background: highlight ? C.blueLight : "transparent", marginLeft: highlight ? -8 : 0, marginRight: highlight ? -8 : 0, paddingLeft: highlight ? 8 : 0, paddingRight: highlight ? 8 : 0 }}>
-      <span style={{ fontSize: 13, color: C.gray5 }}>
-        {tip ? <Tip text={tip}><span style={{ borderBottom: `1px dotted ${C.gray3}`, cursor: "help" }}>{label}</span></Tip> : label}
-      </span>
-      <div style={{ textAlign: "right" }}>
-        <div style={{ fontSize: 13, fontWeight: 600, fontFamily: "monospace", color: negative ? C.red : positive ? C.green : C.text }}>{value}</div>
-        {sub && <div style={{ fontSize: 11, color: C.gray4 }}>{sub}</div>}
-      </div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:`1px solid ${C.gray2}`,background:highlight?C.blueLight:"transparent"}}>
+      <span style={{fontSize:13,color:C.gray5}}>{tip?<Tip text={tip}><span style={{borderBottom:`1px dotted ${C.gray3}`,cursor:"help"}}>{label}</span></Tip>:label}</span>
+      <span style={{fontSize:13,fontWeight:600,fontFamily:"monospace",color:negative?C.red:positive?C.green:C.text}}>{value}</span>
     </div>
   );
 }
 
 function SectionHead({ children }) {
+  return <div style={{fontSize:11,fontWeight:700,color:C.blue,textTransform:"uppercase",letterSpacing:"0.08em",padding:"10px 0 6px",borderBottom:`2px solid ${C.orange}`,marginBottom:8}}>{children}</div>;
+}
+
+// ─── TRANSFERS (rebuilt per meeting notes) ────────────────────────────────────
+function Transfers({ acct }) {
+  const [step, setStep] = useState(1);
+  // step 1: account + direction
+  // step 2: funding mode + amount
+  // step 3: confirm
+  const [direction, setDirection] = useState("withdraw"); // withdraw | deposit | internal
+  const [fundingMode, setFundingMode] = useState("cash"); // cash | cash-and-margin
+  const [amount, setAmount] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+
+  const amt = parseFloat(amount) || 0;
+  const cashAvail = acct.cshCRBal;
+  const marginAvail = acct.hseSurpAmt;
+  const totalAvail = cashAvail + marginAvail;
+  const effectiveLimit = fundingMode === "cash" ? cashAvail : totalAvail;
+
+  const cashUsed = Math.min(amt, cashAvail);
+  const marginUsed = fundingMode === "cash-and-margin" ? Math.max(0, amt - cashAvail) : 0;
+  const exceedsLimit = amt > effectiveLimit;
+  const newDebit = Math.max(0, acct.marginDebit - (direction !== "deposit" ? 0 : amt));
+  const debitPaydown = direction === "deposit" ? Math.min(amt, acct.marginDebit) : 0;
+
+  const reset = () => { setStep(1); setDirection("withdraw"); setFundingMode("cash"); setAmount(""); setConfirmed(false); };
+
+  if (confirmed) return (
+    <div style={{maxWidth:540,margin:"0 auto",textAlign:"center",padding:"48px 20px"}}>
+      <div style={{width:68,height:68,borderRadius:"50%",background:C.greenLight,border:`2px solid ${C.green}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px",fontSize:32,color:C.green}}>✓</div>
+      <div style={{fontSize:22,fontWeight:700,color:C.navy,marginBottom:6}}>Transfer Submitted</div>
+      <div style={{color:C.gray4,fontSize:13,marginBottom:28}}>Confirmation #{Math.random().toString(36).slice(2,10).toUpperCase()} · Estimated settlement 1–3 business days</div>
+      <div style={{...Scard,textAlign:"left",marginBottom:16}}>
+        {[
+          ["Account", `${acct.name} ${acct.acctNum}`],
+          ["Direction", direction === "withdraw" ? "Withdrawal to Checking" : direction === "deposit" ? "Deposit from Checking" : "Internal Transfer"],
+          ["Total Amount", fmt(amt)],
+          ...(direction === "withdraw" ? [["Funded from Cash", fmt(cashUsed)], ["Funded from Margin", fmt(marginUsed)]] : []),
+          ...(direction === "deposit" && debitPaydown > 0 ? [["Applied to Margin Debit", fmt(debitPaydown)]] : []),
+        ].map(([l,v]) => (
+          <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"9px 0",borderBottom:`1px solid ${C.gray2}`}}>
+            <span style={{fontSize:13,color:C.gray5}}>{l}</span>
+            <span style={{fontSize:13,fontWeight:600,fontFamily:"monospace",color:l.includes("Margin")&&v!==fmt(0)?C.orange:C.text}}>{v}</span>
+          </div>
+        ))}
+      </div>
+      {marginUsed > 0 && <Alert type="warning">💡 <strong>{fmt(marginUsed)}</strong> of this withdrawal used margin credit and will accrue interest at <strong>{acct.interestRate}% APR</strong>.</Alert>}
+      <button style={Sbtn("primary")} onClick={reset}>Make Another Transfer</button>
+    </div>
+  );
+
   return (
-    <div style={{ fontSize: 11, fontWeight: 700, color: C.blue, textTransform: "uppercase", letterSpacing: "0.08em", padding: "12px 0 6px", borderBottom: `2px solid ${C.orange}`, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
-      {children}
+    <div style={{maxWidth:660,margin:"0 auto"}}>
+      <div style={{fontSize:20,fontWeight:700,color:C.navy,marginBottom:2}}>Move Money</div>
+      <div style={{fontSize:13,color:C.gray4,marginBottom:24}}>Transfer funds to or from your account</div>
+
+      {/* Step indicator */}
+      <div style={{display:"flex",alignItems:"center",marginBottom:28}}>
+        {["Select Account","Funding & Amount","Confirm"].map((label,i) => {
+          const s = i+1;
+          const active = step === s, done = step > s;
+          return (
+            <div key={s} style={{display:"flex",alignItems:"center",flex:s<3?1:0}}>
+              <div style={{width:30,height:30,borderRadius:"50%",background:done?C.green:active?C.blue:C.gray2,color:done||active?C.white:C.gray4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:done?16:13,fontWeight:700,flexShrink:0,transition:"all 0.2s"}}>
+                {done ? "✓" : s}
+              </div>
+              <span style={{fontSize:12,color:active?C.blue:done?C.green:C.gray4,fontWeight:active||done?600:400,margin:"0 8px",whiteSpace:"nowrap"}}>{label}</span>
+              {s < 3 && <div style={{flex:1,height:2,background:done?C.green:C.gray2,marginRight:8,transition:"all 0.3s"}}/>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── STEP 1: Account selection + direction ── */}
+      {step === 1 && (
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <div style={Scard}>
+            <div style={{fontSize:14,fontWeight:700,color:C.navy,marginBottom:16}}>1. Select Account & Direction</div>
+
+            <div style={{marginBottom:20}}>
+              <div style={Slabel}>Account</div>
+              <div style={{background:C.gray1,border:`1px solid ${C.border}`,borderRadius:6,padding:"12px 14px",fontSize:14,fontWeight:600,color:C.text,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span>{acct.name} <span style={{color:C.gray4,fontWeight:400}}>{acct.acctNum}</span></span>
+                <div style={{display:"flex",gap:6}}>{acct.isMarginAccount&&<Badge color={C.blue}>MARGIN</Badge>}{acct.hasCall&&<Badge color={C.red}>CALL</Badge>}</div>
+              </div>
+              <div style={{fontSize:11,color:C.gray4,marginTop:4}}>To switch accounts, use the account selector in the top navigation.</div>
+            </div>
+
+            <div style={{marginBottom:8}}>
+              <div style={Slabel}>Transfer Type</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {[
+                  ["withdraw","Withdrawal — Investment → Checking","Take money out of this account"],
+                  ["deposit","Deposit — Checking → Investment","Add money to this account"],
+                  ["internal","Internal Transfer — Investment → Investment","Move between linked investment accounts"],
+                ].map(([val,label,desc]) => (
+                  <div key={val} onClick={()=>setDirection(val)} style={{padding:"14px 16px",borderRadius:6,border:`2px solid ${direction===val?C.blue:C.border}`,background:direction===val?C.blueLight:C.white,cursor:"pointer",display:"flex",gap:12,alignItems:"flex-start",transition:"all 0.15s"}}>
+                    <div style={{width:18,height:18,borderRadius:"50%",border:`2px solid ${direction===val?C.blue:C.gray3}`,background:direction===val?C.blue:C.white,flexShrink:0,marginTop:1,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      {direction===val && <div style={{width:6,height:6,borderRadius:"50%",background:C.white}}/>}
+                    </div>
+                    <div>
+                      <div style={{fontWeight:600,fontSize:13,color:direction===val?C.blue:C.text}}>{label}</div>
+                      <div style={{fontSize:12,color:C.gray4,marginTop:2}}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <button style={{...Sbtn("primary"),alignSelf:"flex-end",padding:"10px 28px"}} onClick={()=>setStep(2)}>
+            Continue →
+          </button>
+        </div>
+      )}
+
+      {/* ── STEP 2: Funding mode + amount ── */}
+      {step === 2 && (
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+
+          {/* Margin account info block — appears after account selection for margin accounts */}
+          {acct.isMarginAccount && direction === "withdraw" && (
+            <div style={{background:"linear-gradient(135deg,#003366 0%,#0069aa 100%)",borderRadius:8,padding:"20px 24px",color:C.white}}>
+              <div style={{fontSize:13,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",opacity:0.75,marginBottom:10}}>Margin Account — Available Funds</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1px 1fr 1px 1fr",alignItems:"start",marginBottom:16}}>
+                <div style={{paddingRight:16}}>
+                  <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",opacity:0.65,marginBottom:4}}>Cash Available</div>
+                  <div style={{fontSize:22,fontWeight:700,fontFamily:"monospace"}}>{fmt(cashAvail)}</div>
+                  <div style={{fontSize:10,opacity:0.55,marginTop:2}}>No interest charged</div>
+                </div>
+                <div style={{background:"rgba(255,255,255,0.2)",margin:"0 16px",alignSelf:"stretch"}}/>
+                <div style={{paddingRight:16}}>
+                  <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",opacity:0.65,marginBottom:4}}>Margin Surplus</div>
+                  <div style={{fontSize:22,fontWeight:700,fontFamily:"monospace",color:"#fbbf24"}}>{fmt(marginAvail)}</div>
+                  <div style={{fontSize:10,opacity:0.55,marginTop:2}}>{acct.interestRate}% APR if used</div>
+                </div>
+                <div style={{background:"rgba(255,255,255,0.2)",margin:"0 16px",alignSelf:"stretch"}}/>
+                <div>
+                  <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",opacity:0.65,marginBottom:4}}>Total Available</div>
+                  <div style={{fontSize:22,fontWeight:700,fontFamily:"monospace",color:"#6ee7b7"}}>{fmt(totalAvail)}</div>
+                  <div style={{fontSize:10,opacity:0.55,marginTop:2}}>Cash + Margin Surplus</div>
+                </div>
+              </div>
+              <div style={{background:"rgba(255,255,255,0.1)",borderRadius:6,padding:"10px 14px",fontSize:12,lineHeight:1.6}}>
+                ℹ️ This is a margin account — it works like a <strong>line of credit</strong> secured by your securities. You can withdraw beyond your cash balance using your margin availability. <strong>Cash is always withdrawn first</strong>; margin is only used after your cash is exhausted.
+              </div>
+            </div>
+          )}
+
+          {/* For deposit: show debit paydown info */}
+          {acct.isMarginAccount && direction === "deposit" && acct.marginDebit > 0 && (
+            <Alert type="info">
+              💡 This account has an outstanding margin debit of <strong>{fmt(acct.marginDebit)}</strong>. Deposited funds will automatically pay down this balance first, reducing your interest charges.
+            </Alert>
+          )}
+
+          <div style={Scard}>
+            <div style={{fontSize:14,fontWeight:700,color:C.navy,marginBottom:20}}>2. Funding Mode & Amount</div>
+
+            {/* Radio: Cash only vs Cash + Margin — only for withdrawals on margin accounts */}
+            {acct.isMarginAccount && direction === "withdraw" && (
+              <div style={{marginBottom:24}}>
+                <div style={{...Slabel,marginBottom:8}}>Withdrawal Source <span style={{color:C.orange,fontSize:10,fontWeight:700,background:C.orangeLight,padding:"2px 8px",borderRadius:20,marginLeft:6}}>Choose how to fund this withdrawal</span></div>
+
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {/* Cash Only */}
+                  <div onClick={()=>setFundingMode("cash")} style={{padding:"16px 18px",borderRadius:8,border:`2px solid ${fundingMode==="cash"?C.blue:C.border}`,background:fundingMode==="cash"?C.blueLight:C.white,cursor:"pointer",transition:"all 0.15s"}}>
+                    <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                      <div style={{width:20,height:20,borderRadius:"50%",border:`2px solid ${fundingMode==="cash"?C.blue:C.gray3}`,background:fundingMode==="cash"?C.blue:C.white,flexShrink:0,marginTop:2,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {fundingMode==="cash" && <div style={{width:7,height:7,borderRadius:"50%",background:C.white}}/>}
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div style={{fontWeight:700,fontSize:14,color:fundingMode==="cash"?C.blue:C.text}}>Cash Only</div>
+                          <div style={{fontFamily:"monospace",fontSize:15,fontWeight:700,color:C.green}}>{fmt(cashAvail)} available</div>
+                        </div>
+                        <div style={{fontSize:12,color:C.gray5,marginTop:4,lineHeight:1.5}}>Withdraw from your cash balance only. <strong>No margin is used</strong> — no interest charges apply.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cash + Margin */}
+                  <div onClick={()=>setFundingMode("cash-and-margin")} style={{padding:"16px 18px",borderRadius:8,border:`2px solid ${fundingMode==="cash-and-margin"?C.orange:C.border}`,background:fundingMode==="cash-and-margin"?C.orangeLight:C.white,cursor:"pointer",transition:"all 0.15s"}}>
+                    <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                      <div style={{width:20,height:20,borderRadius:"50%",border:`2px solid ${fundingMode==="cash-and-margin"?C.orange:C.gray3}`,background:fundingMode==="cash-and-margin"?C.orange:C.white,flexShrink:0,marginTop:2,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {fundingMode==="cash-and-margin" && <div style={{width:7,height:7,borderRadius:"50%",background:C.white}}/>}
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div style={{fontWeight:700,fontSize:14,color:fundingMode==="cash-and-margin"?C.orange:"#5a3a10"}}>Cash + Margin</div>
+                          <div style={{fontFamily:"monospace",fontSize:15,fontWeight:700,color:C.orange}}>{fmt(totalAvail)} available</div>
+                        </div>
+                        <div style={{fontSize:12,color:C.gray5,marginTop:4,lineHeight:1.5}}>
+                          Withdraw beyond your cash balance using your <strong>margin line of credit</strong>. Cash is still used first — margin only activates once cash is exhausted. Interest accrues at <strong>{acct.interestRate}% APR</strong> on any margin portion.
+                        </div>
+                        {fundingMode==="cash-and-margin" && (
+                          <div style={{marginTop:10,padding:"8px 12px",background:"rgba(245,128,37,0.1)",border:`1px solid ${C.orange}30`,borderRadius:6,fontSize:12,color:"#7a4010",lineHeight:1.5}}>
+                            ⚠️ <strong>I understand</strong> that selecting this option may result in margin borrowing, which incurs interest charges and carries the risk of a margin call if my account value declines.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* From / To */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+              <div>
+                <div style={Slabel}>From</div>
+                <div style={{background:C.gray1,border:`1px solid ${C.border}`,borderRadius:6,padding:"10px 14px",fontSize:13,color:C.text}}>
+                  {direction==="deposit"||direction==="internal" ? "Checking ****4821" : `${acct.name} ${acct.acctNum}`}
+                </div>
+              </div>
+              <div>
+                <div style={Slabel}>To</div>
+                <div style={{background:C.gray1,border:`1px solid ${C.border}`,borderRadius:6,padding:"10px 14px",fontSize:13,color:C.text}}>
+                  {direction==="withdraw" ? "Checking ****4821" : direction==="deposit" ? `${acct.name} ${acct.acctNum}` : "Select account"}
+                </div>
+              </div>
+            </div>
+
+            {/* Amount */}
+            <div style={{marginBottom:20}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                <div style={Slabel}>Amount</div>
+                <div style={{fontSize:11,color:C.gray4}}>
+                  Limit: <span style={{fontFamily:"monospace",fontWeight:600,color:exceedsLimit?C.red:C.text}}>{fmt(effectiveLimit)}</span>
+                </div>
+              </div>
+              <div style={{position:"relative"}}>
+                <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.gray4,fontSize:18,fontWeight:600}}>$</span>
+                <input type="number" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00"
+                  style={{width:"100%",border:`2px solid ${exceedsLimit?C.red:amt>0?C.blue:C.border}`,borderRadius:6,padding:"13px 14px 13px 30px",fontSize:22,fontFamily:"monospace",fontWeight:700,color:C.text,background:C.white,outline:"none",boxSizing:"border-box"}}/>
+              </div>
+              {exceedsLimit && (
+                <div style={{color:C.red,fontSize:12,marginTop:5}}>
+                  ⚠ Exceeds {fundingMode==="cash"?"cash available":"total available"} ({fmt(effectiveLimit)}){fundingMode==="cash"?". Switch to Cash + Margin to access up to "+fmt(totalAvail)+".":""}
+                </div>
+              )}
+            </div>
+
+            {/* Live funding preview */}
+            {amt > 0 && !exceedsLimit && direction === "withdraw" && acct.isMarginAccount && (
+              <div style={{background:C.gray1,borderRadius:8,padding:"16px",marginBottom:4}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.gray4,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:12}}>Funding Preview</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:12}}>
+                  {[
+                    ["From Cash", fmt(cashUsed), "No interest", C.blue],
+                    ["From Margin", fundingMode==="cash-and-margin"?fmt(marginUsed):fmt(0), fundingMode==="cash-and-margin"&&marginUsed>0?`${acct.interestRate}% APR`:"Not used", marginUsed>0?C.orange:C.gray3],
+                    ["Total", fmt(amt), "1–3 business days", C.green],
+                  ].map(([l,v,sub,color])=>(
+                    <div key={l} style={{background:C.white,borderRadius:6,padding:"10px 12px",border:`1px solid ${C.border}`}}>
+                      <div style={{fontSize:10,color:C.gray4,fontWeight:600,textTransform:"uppercase",marginBottom:4}}>{l}</div>
+                      <div style={{fontSize:15,fontWeight:700,fontFamily:"monospace",color}}>{v}</div>
+                      <div style={{fontSize:10,color:C.gray4,marginTop:2}}>{sub}</div>
+                    </div>
+                  ))}
+                </div>
+                {amt > 0 && (
+                  <div style={{height:6,background:C.gray2,borderRadius:3,overflow:"hidden",display:"flex"}}>
+                    <div style={{width:`${Math.min((cashUsed/amt)*100,100)}%`,background:C.blue,transition:"width 0.3s"}}/>
+                    <div style={{width:`${(marginUsed/amt)*100}%`,background:C.orange,transition:"width 0.3s"}}/>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Recurring / future-date controls — DISABLED for margin accounts */}
+            <div style={{marginTop:20,paddingTop:16,borderTop:`1px solid ${C.gray2}`}}>
+              <div style={{...Slabel,marginBottom:10}}>Schedule</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,opacity:acct.isMarginAccount?0.45:1,pointerEvents:acct.isMarginAccount?"none":"auto"}}>
+                <div>
+                  <div style={{fontSize:12,color:C.gray4,marginBottom:6}}>Frequency</div>
+                  <div style={{background:C.gray1,border:`1px solid ${C.border}`,borderRadius:6,padding:"10px 14px",fontSize:13,color:C.gray4,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    One-time only
+                    {acct.isMarginAccount && <span style={{fontSize:10,background:C.gray2,color:C.gray4,padding:"2px 7px",borderRadius:20}}>LOCKED</span>}
+                  </div>
+                </div>
+                <div>
+                  <div style={{fontSize:12,color:C.gray4,marginBottom:6}}>Transfer Date</div>
+                  <div style={{background:C.gray1,border:`1px solid ${C.border}`,borderRadius:6,padding:"10px 14px",fontSize:13,color:C.gray4,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    As soon as possible
+                    {acct.isMarginAccount && <span style={{fontSize:10,background:C.gray2,color:C.gray4,padding:"2px 7px",borderRadius:20}}>LOCKED</span>}
+                  </div>
+                </div>
+              </div>
+              {acct.isMarginAccount && (
+                <div style={{marginTop:8,fontSize:11,color:C.gray4,lineHeight:1.5}}>
+                  🔒 Recurring and future-dated transfers are not available for margin accounts. Transfers must be initiated manually to ensure conscious use of your margin line.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <button style={Sbtn("outline")} onClick={()=>setStep(1)}>← Back</button>
+            <button
+              style={Sbtn("primary", amt<=0||exceedsLimit)}
+              onClick={()=>amt>0&&!exceedsLimit&&setStep(3)}
+            >
+              Review Transfer →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── STEP 3: Confirm ── */}
+      {step === 3 && (
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <div style={Scard}>
+            <div style={{fontSize:16,fontWeight:700,color:C.navy,marginBottom:4}}>Review & Confirm</div>
+            <div style={{fontSize:13,color:C.gray4,marginBottom:18}}>Please review the details of your transfer before confirming.</div>
+
+            {[
+              ["Account", `${acct.name} ${acct.acctNum}`],
+              ["Direction", direction==="withdraw"?"Withdrawal to Checking ****4821":direction==="deposit"?"Deposit from Checking ****4821":"Internal Transfer"],
+              ["Funding Mode", direction==="withdraw"&&acct.isMarginAccount?(fundingMode==="cash"?"Cash Only":"Cash + Margin (conscious margin use)"):"Standard"],
+              ["Total Amount", fmt(amt)],
+              ...(direction==="withdraw"&&acct.isMarginAccount?[["  From Cash", fmt(cashUsed)],["  From Margin", fmt(marginUsed)]]:[] ),
+              ["Transfer Date", "As soon as possible"],
+              ["Frequency", "One-time"],
+              ["Est. Settlement", "1–3 business days"],
+            ].map(([label,val])=>(
+              <div key={label} style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:`1px solid ${C.gray2}`,paddingLeft:label.startsWith("  ")?20:0}}>
+                <span style={{fontSize:13,color:label.startsWith("  ")?C.gray4:C.gray5}}>{label.trim()}</span>
+                <span style={{fontSize:13,fontWeight:600,fontFamily:"monospace",color:label.includes("Margin")&&marginUsed>0&&!label.includes("Mode")?C.orange:label.includes("Mode")&&fundingMode==="cash-and-margin"?C.orange:C.text}}>{val}</span>
+              </div>
+            ))}
+          </div>
+
+          {marginUsed > 0 && (
+            <Alert type="warning">
+              ⚠️ <strong>{fmt(marginUsed)}</strong> of this transfer will borrow from your margin line of credit at <strong>{acct.interestRate}% APR</strong>. This is a conscious use of margin — interest will accrue daily on the borrowed amount.
+            </Alert>
+          )}
+
+          {fundingMode === "cash-and-margin" && marginUsed === 0 && (
+            <Alert type="info">
+              ✅ Your withdrawal of <strong>{fmt(amt)}</strong> is fully covered by cash. No margin will be used for this transfer.
+            </Alert>
+          )}
+
+          <div style={{fontSize:11,color:C.gray4,lineHeight:1.6,padding:"0 4px"}}>
+            By confirming, you authorize this transfer under applicable margin account terms. You acknowledge that if margin is used, interest charges apply and a margin call may be triggered if your account value declines.
+          </div>
+
+          <div style={{display:"flex",justifyContent:"space-between"}}>
+            <button style={Sbtn("outline")} onClick={()=>setStep(2)}>← Edit</button>
+            <button style={Sbtn(marginUsed>0?"orange":"primary")} onClick={()=>setConfirmed(true)}>
+              {marginUsed>0?"⚠ Confirm with Margin":"Confirm Transfer"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function AlertBanner({ type = "error", children }) {
-  const colors = {
-    error: { bg: C.redLight, border: C.red, text: C.red, icon: "⚠" },
-    warning: { bg: C.orangeLight, border: C.orange, text: "#b05a00", icon: "⚠" },
-    info: { bg: C.blueLight, border: C.blue, text: C.navy, icon: "ℹ" },
-  };
-  const c = colors[type];
+// ── EDUCATION SECTION ─────────────────────────────────────────────────────────
+function EducationSection() {
+  const [calc, setCalc] = useState({equity:10000,loanPct:50,dropPct:40});
+  const maxPurchase = calc.equity/(calc.loanPct/100);
+  const postDropValue = maxPurchase*(1-calc.dropPct/100);
+  const postDropEquity = postDropValue-(maxPurchase-calc.equity);
+  const postDropEquityPct = (postDropEquity/postDropValue)*100;
+  const houseReq=30, inCall=postDropEquityPct<houseReq;
   return (
-    <div style={{ background: c.bg, border: `1px solid ${c.border}`, borderLeft: `4px solid ${c.border}`, borderRadius: 6, padding: "12px 16px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16 }}>
-      <span style={{ color: c.border, fontWeight: 700, fontSize: 16, lineHeight: 1 }}>{c.icon}</span>
-      <div style={{ color: c.text, fontSize: 13, lineHeight: 1.5 }}>{children}</div>
+    <div style={{marginTop:28}}>
+      <div style={{fontSize:16,fontWeight:700,color:C.navy,marginBottom:2}}>Margin Education</div>
+      <div style={{fontSize:13,color:C.gray4,marginBottom:16}}>Plain-language guides to help you understand margin investing</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:20}}>
+        {[["📊","What is Margin?","Margin works like a line of credit — similar to a HELOC or credit card — secured by the securities in your account. The available amount fluctuates as market values change.",C.blue],
+          ["⚡","How Withdrawals Work","Cash is always withdrawn first. Margin is only accessed after your cash balance is exhausted. You cannot choose to leave cash unused while pulling from margin.",C.navy],
+          ["🚨","Margin Calls","If your account value drops and your equity falls below the house maintenance requirement (~30%), a margin call is issued. You must deposit funds or sell positions.",C.red],
+          ["🔁","Why No Recurring Transfers?","Recurring or future-dated transfers are disabled on margin accounts to prevent unintentional accumulation of margin debt over time.",C.orange]
+        ].map(([icon,title,body,accent])=>(
+          <div key={title} style={{...Scard,borderLeft:`4px solid ${accent}`}}>
+            <div style={{fontSize:22,marginBottom:8}}>{icon}</div>
+            <div style={{fontSize:14,fontWeight:700,color:C.navy,marginBottom:6}}>{title}</div>
+            <div style={{fontSize:13,color:C.gray5,lineHeight:1.6}}>{body}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{...Scard,borderTop:`3px solid ${C.orange}`}}>
+        <div style={{fontSize:15,fontWeight:700,color:C.navy,marginBottom:4}}>Interactive Calculator — Margin Call Scenario</div>
+        <div style={{fontSize:13,color:C.gray4,marginBottom:20}}>Adjust sliders to explore when a margin call would be triggered</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:20,marginBottom:24}}>
+          {[["Starting Cash Equity","equity","$",1000,100000,500],["Reg T Initial Req (%)","loanPct","",25,100,5],["Position Drop (%)","dropPct","",0,80,5]].map(([label,key,prefix,min,max,step])=>(
+            <div key={key}>
+              <div style={Slabel}>{label}</div>
+              <div style={{fontSize:22,fontWeight:700,color:C.navy,fontFamily:"monospace",marginBottom:8}}>{prefix}{calc[key].toLocaleString()}{key!=="equity"?"%":""}</div>
+              <input type="range" min={min} max={max} step={step} value={calc[key]} onChange={e=>setCalc(c=>({...c,[key]:parseFloat(e.target.value)}))} style={{width:"100%",accentColor:C.blue,cursor:"pointer"}}/>
+            </div>
+          ))}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:16}}>
+          {[["Max Purchase",fmt(maxPurchase),C.blue],["Value After Drop",fmt(postDropValue),C.gray5],["Equity After Drop",fmt(postDropEquity),postDropEquity<0?C.red:C.green],["Equity %",`${postDropEquityPct.toFixed(1)}%`,inCall?C.red:C.green]].map(([label,val,color])=>(
+            <div key={label} style={{...Scard,padding:"14px 16px",borderTop:`2px solid ${color}`}}>
+              <div style={Slabel}>{label}</div>
+              <div style={{fontSize:18,fontWeight:700,fontFamily:"monospace",color}}>{val}</div>
+            </div>
+          ))}
+        </div>
+        {inCall?<Alert type="error">⚠️ <strong>Margin Call!</strong> Equity ({postDropEquityPct.toFixed(1)}%) is below the {houseReq}% house requirement. Deposit {fmt(Math.abs(postDropEquity))} or sell positions.</Alert>
+               :<Alert type="info">✅ Equity ({postDropEquityPct.toFixed(1)}%) is above the {houseReq}% house requirement. No margin call at this scenario.</Alert>}
+      </div>
     </div>
   );
 }
@@ -168,74 +487,56 @@ function AlertBanner({ type = "error", children }) {
 function Dashboard({ acct, setTab }) {
   return (
     <div>
-      {acct.hasCall && (
-        <AlertBanner type="error">
-          <strong>Margin Call — {fmt(acct.callAmount)} required by {acct.callDueDate}.</strong> Please deposit funds or sell positions to resolve this call.{" "}
-          <span onClick={() => setTab("Transfers")} style={{ color: C.blue, cursor: "pointer", textDecoration: "underline" }}>Deposit now</span>
-        </AlertBanner>
-      )}
-
-      {/* Summary tiles */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 20 }}>
-        {[
-          { label: "Cash Available", value: fmtShort(acct.buyingPowerCash), sub: "No margin", icon: "💵", tip: "Available cash without using margin borrowing" },
-          { label: "Buying Power", value: fmtShort(acct.buyingPowerMargin), sub: "Incl. margin", icon: "⚡", tip: "Total purchasing power including margin borrowing capacity", highlight: true },
-          { label: "Margin Debit", value: fmtShort(acct.marginDebit), sub: "Outstanding loan", icon: "🏦", tip: "Amount borrowed on margin. Interest accrues daily.", negative: acct.marginDebit > 0 },
-          { label: "Net Equity", value: fmtShort(acct.marginEquity), sub: `${acct.marginEquityPct}% of market value`, icon: "📊", tip: "Market Value minus Margin Debit.", positive: true },
-        ].map(({ label, value, sub, icon, tip, highlight, negative, positive }) => (
-          <div key={label} style={{ ...S.card, borderTop: `3px solid ${highlight ? C.orange : C.blue}`, position: "relative" }}>
-            <div style={{ position: "absolute", top: 16, right: 16, fontSize: 20, opacity: 0.15 }}>{icon}</div>
-            <div style={S.label}>
-              <Tip text={tip}><span style={{ borderBottom: `1px dotted ${C.gray3}`, cursor: "help" }}>{label}</span></Tip>
-            </div>
-            <div style={{ fontSize: 24, fontWeight: 700, fontFamily: "monospace", color: negative ? C.red : positive ? C.green : C.text, marginBottom: 2 }}>{value}</div>
-            <div style={{ fontSize: 11, color: C.gray4 }}>{sub}</div>
+      {acct.hasCall && <Alert type="error"><strong>Margin Call — {fmt(acct.callAmount)} required by {acct.callDueDate}.</strong>{" "}<span onClick={()=>setTab("Transfers")} style={{color:C.blue,cursor:"pointer",textDecoration:"underline"}}>Deposit now</span> or sell positions to resolve.</Alert>}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
+        {[{label:"Cash Available",value:fmt(acct.buyingPowerCash),sub:"No margin",tip:"Available cash without margin borrowing",accent:C.blue},
+          {label:"Buying Power",value:fmt(acct.buyingPowerMargin),sub:"Incl. margin",tip:"Total purchasing power including margin capacity",accent:C.orange,pos:true},
+          {label:"Margin Debit",value:fmt(acct.marginDebit),sub:"Outstanding loan",tip:"Amount borrowed. Interest accrues daily.",accent:acct.marginDebit>0?C.red:C.green,neg:acct.marginDebit>0},
+          {label:"Net Equity",value:fmt(acct.marginEquity),sub:`${acct.marginEquityPct}% of mkt value`,tip:"Market value minus margin debit",accent:C.green,pos:true},
+        ].map(({label,value,sub,tip,accent,pos,neg})=>(
+          <div key={label} style={{...Scard,borderTop:`3px solid ${accent}`}}>
+            <div style={Slabel}><Tip text={tip}><span style={{borderBottom:`1px dotted ${C.gray3}`,cursor:"help"}}>{label}</span></Tip></div>
+            <div style={{fontSize:22,fontWeight:700,fontFamily:"monospace",color:neg?C.red:pos?C.green:C.text,marginBottom:2}}>{value}</div>
+            <div style={{fontSize:11,color:C.gray4}}>{sub}</div>
           </div>
         ))}
       </div>
-
-      {/* Account carousel */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: C.gray5, marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em", fontSize: 11 }}>Your Margin Accounts</div>
-        <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
-          {accounts.map((a) => (
-            <div key={a.id} style={{ ...S.card, minWidth: 180, flex: "0 0 auto", borderTop: `3px solid ${a.hasCall ? C.red : C.blue}`, cursor: "pointer" }}>
-              <div style={{ fontSize: 11, color: C.gray4, marginBottom: 2 }}>{a.name}</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: C.navy, marginBottom: 8 }}>{a.acctNum}</div>
-              <div style={{ fontSize: 11, color: C.gray4 }}>Market Value</div>
-              <div style={{ fontSize: 16, fontWeight: 700, fontFamily: "monospace", color: C.text }}>{fmtShort(a.marketValue)}</div>
-              {a.hasCall && <div style={{ marginTop: 8 }}><Badge color={C.red}>MARGIN CALL</Badge></div>}
-              {a.isDriver && !a.hasCall && <div style={{ marginTop: 8 }}><Badge color={C.blue}>DRIVER</Badge></div>}
+      <div style={{marginBottom:20}}>
+        <div style={{fontSize:11,fontWeight:700,color:C.gray4,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>Your Accounts</div>
+        <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+          {accounts.map(a=>(
+            <div key={a.id} style={{...Scard,minWidth:170,flex:"0 0 auto",borderTop:`3px solid ${a.hasCall?C.red:a.isMarginAccount?C.blue:C.gray3}`,cursor:"pointer"}}>
+              <div style={{fontSize:11,color:C.gray4}}>{a.name}</div>
+              <div style={{fontSize:13,fontWeight:700,color:C.navy,marginBottom:8}}>{a.acctNum}</div>
+              <div style={{fontSize:11,color:C.gray4}}>Market Value</div>
+              <div style={{fontSize:18,fontWeight:700,fontFamily:"monospace",color:C.text,marginBottom:8}}>{fmt(a.marketValue)}</div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{a.isMarginAccount&&<Badge color={C.blue}>MARGIN</Badge>}{a.hasCall&&<Badge color={C.red}>CALL</Badge>}{a.isDriver&&<Badge color={C.navy}>DRIVER</Badge>}</div>
             </div>
           ))}
         </div>
       </div>
-
-      {/* 2-col lower */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        <div style={S.card}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div style={Scard}>
           <SectionHead>Portfolio Overview</SectionHead>
-          <DataRow label="Market Value" value={fmt(acct.marketValue)} tip="Total market value of margin-eligible positions" />
-          <DataRow label="Margin Equity" value={`${fmt(acct.marginEquity)} (${pct(acct.marginEquityPct)})`} positive={acct.marginEquityPct > 30} negative={acct.marginEquityPct <= 30} tip="Market value minus margin debit. Must stay above house requirement." />
-          <DataRow label="Interest Rate" value={pct(acct.interestRate)} tip="Current annual margin interest rate on outstanding debit" />
-          <DataRow label="Pending Interest" value={fmt(acct.pendingMarginInterest)} negative={acct.pendingMarginInterest < 0} tip="Accrued interest not yet charged. Debited at end of interest period." />
-          <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-            <button style={S.btn("primary")} onClick={() => setTab("Margin Profile")}>View Profile</button>
-            <button style={S.btn("outline")} onClick={() => setTab("Transfers")}>Transfer</button>
+          <DataRow label="Market Value" value={fmt(acct.marketValue)} tip="Total market value of margin-eligible positions"/>
+          <DataRow label="Margin Equity" value={`${fmt(acct.marginEquity)} (${pct(acct.marginEquityPct)})`} positive={acct.marginEquityPct>30} negative={acct.marginEquityPct<=30} tip="Market value minus margin debit."/>
+          <DataRow label="Interest Rate" value={acct.interestRate?pct(acct.interestRate):"N/A"} tip="Annual margin interest rate"/>
+          <DataRow label="Pending Interest" value={fmt(acct.pendingMarginInterest)} negative={acct.pendingMarginInterest<0} tip="Accrued interest not yet charged."/>
+          <div style={{marginTop:16,display:"flex",gap:8}}>
+            <button style={Sbtn("primary")} onClick={()=>setTab("Margin Profile")}>View Profile</button>
+            <button style={Sbtn("outline")} onClick={()=>setTab("Transfers")}>Transfer</button>
           </div>
         </div>
-        <div style={S.card}>
+        <div style={Scard}>
           <SectionHead>Margin Requirements</SectionHead>
-          {[["Reg T (Federal)", acct.regT, "Initial margin requirement set by the Federal Reserve."],
-            ["House Minimum", acct.house, "Ongoing maintenance requirement. Falling below triggers a margin call."],
-            ["Exchange Minimum", acct.exchange, "Exchange-level maintenance requirement."]].map(([name, val, tip]) => (
-            <div key={name} style={{ marginBottom: 14 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <span style={{ fontSize: 13, color: C.gray5 }}><Tip text={tip}><span style={{ borderBottom: `1px dotted ${C.gray3}`, cursor: "help" }}>{name}</span></Tip></span>
-                <span style={{ fontWeight: 700, color: C.text, fontFamily: "monospace", fontSize: 13 }}>{pct(val)}</span>
+          {[["Reg T (Federal)",acct.regT,"Initial requirement by the Fed."],["House Minimum",acct.house,"Ongoing maintenance requirement."],["Exchange Minimum",acct.exchange,"Exchange-level minimum."]].map(([name,val,tip])=>(
+            <div key={name} style={{marginBottom:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+                <span style={{fontSize:13,color:C.gray5}}><Tip text={tip}><span style={{borderBottom:`1px dotted ${C.gray3}`,cursor:"help"}}>{name}</span></Tip></span>
+                <span style={{fontWeight:700,color:C.text,fontFamily:"monospace",fontSize:13}}>{pct(val)}</span>
               </div>
-              <div style={{ height: 6, background: C.gray2, borderRadius: 3, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${val}%`, background: val >= 50 ? C.blue : val >= 30 ? C.orange : C.red, borderRadius: 3 }} />
+              <div style={{height:6,background:C.gray2,borderRadius:3,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${val}%`,background:val>=50?C.blue:val>=30?C.orange:C.red,borderRadius:3}}/>
               </div>
             </div>
           ))}
@@ -248,446 +549,84 @@ function Dashboard({ acct, setTab }) {
 // ── MARGIN PROFILE ────────────────────────────────────────────────────────────
 function MarginProfile({ acct, setTab }) {
   const [expandReqs, setExpandReqs] = useState(false);
-  const marginablePct = Math.round(acct.cashMarginFullyMarginable / (acct.cashMarginFullyMarginable + acct.cashMarginNonMarginable) * 100);
-
+  const marginablePct = acct.cashMarginFullyMarginable+acct.cashMarginNonMarginable > 0
+    ? Math.round(acct.cashMarginFullyMarginable/(acct.cashMarginFullyMarginable+acct.cashMarginNonMarginable)*100) : 0;
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: C.navy }}>{acct.name} <span style={{ color: C.gray4, fontSize: 16 }}>{acct.acctNum}</span></div>
-          <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-            {acct.isDriver && <Badge color={C.blue}>DRIVER ACCOUNT</Badge>}
-            {acct.hasCall && <Badge color={C.red}>MARGIN CALL ACTIVE</Badge>}
-          </div>
+          <div style={{fontSize:20,fontWeight:700,color:C.navy}}>{acct.name} <span style={{color:C.gray4,fontSize:16}}>{acct.acctNum}</span></div>
+          <div style={{display:"flex",gap:8,marginTop:6}}>{acct.isDriver&&<Badge color={C.blue}>DRIVER</Badge>}{acct.hasCall&&<Badge color={C.red}>MARGIN CALL ACTIVE</Badge>}</div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button style={S.btn("orange")} onClick={() => setTab("Transfers")}>Deposit to Resolve</button>
-          <button style={S.btn("outline")} onClick={() => setTab("Education")}>Learn About Margin</button>
-        </div>
+        <button style={Sbtn("orange")} onClick={()=>setTab("Transfers")}>Deposit to Resolve</button>
       </div>
-
-      {acct.hasCall && (
-        <AlertBanner type="error">
-          <strong>Margin Call in Effect.</strong> You must deposit <strong>{fmt(acct.callAmount)}</strong> or sell securities by <strong>{acct.callDueDate}</strong>. Failure to act may result in forced liquidation.
-        </AlertBanner>
-      )}
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
-        {/* Trading Balance */}
-        <div style={S.card}>
+      {acct.hasCall&&<Alert type="error"><strong>Margin Call in Effect.</strong> Deposit <strong>{fmt(acct.callAmount)}</strong> or sell securities by <strong>{acct.callDueDate}</strong>. Failure may result in forced liquidation.</Alert>}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+        <div style={Scard}>
           <SectionHead>Trading Balance</SectionHead>
-          <DataRow label="Settled Cash" value={fmt(acct.settledCash)} tip="Cash that has fully cleared and is available for use." positive={acct.settledCash > 0} negative={acct.settledCash < 0} />
-          <DataRow label="Unsettled Cash Credit/Debit" value={fmt(acct.unsettledCash)} tip="Pending cash from trades not yet settled (T+1 or T+2)." positive={acct.unsettledCash > 0} negative={acct.unsettledCash < 0} />
-          <div style={{ margin: "12px 0 4px", fontSize: 11, fontWeight: 700, color: C.gray4, textTransform: "uppercase", letterSpacing: "0.06em" }}>Cash & Margin Holdings</div>
-          <DataRow label="Fully Marginable" value={fmt(acct.cashMarginFullyMarginable)} tip="Securities eligible for full margin lending." positive />
-          <DataRow label="Non-Marginable" value={fmt(acct.cashMarginNonMarginable)} tip="Securities ineligible for margin lending." />
-
-          <div style={{ marginTop: 14, padding: "12px", background: C.gray1, borderRadius: 6 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 11, color: C.gray4, fontWeight: 600 }}>MARGINABILITY SPLIT</span>
-              <span style={{ fontSize: 11, color: C.blue, fontWeight: 700 }}>{marginablePct}% eligible</span>
+          <DataRow label="Settled Cash" value={fmt(acct.settledCash)} positive={acct.settledCash>0} negative={acct.settledCash<0} tip="Fully cleared cash available for use."/>
+          <DataRow label="Unsettled Cash" value={fmt(acct.unsettledCash)} positive={acct.unsettledCash>0} negative={acct.unsettledCash<0} tip="Pending cash from trades not yet settled."/>
+          <div style={{margin:"12px 0 4px",fontSize:11,fontWeight:700,color:C.gray4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Cash & Margin Holdings</div>
+          <DataRow label="Fully Marginable" value={fmt(acct.cashMarginFullyMarginable)} positive tip="Securities eligible for full margin lending."/>
+          <DataRow label="Non-Marginable" value={fmt(acct.cashMarginNonMarginable)} tip="Securities ineligible for margin lending."/>
+          {marginablePct > 0 && (
+            <div style={{marginTop:14,padding:"12px",background:C.gray1,borderRadius:6}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:11,color:C.gray4,fontWeight:600}}>MARGINABILITY SPLIT</span><span style={{fontSize:11,color:C.blue,fontWeight:700}}>{marginablePct}% eligible</span></div>
+              <div style={{height:8,background:C.gray2,borderRadius:4,overflow:"hidden",display:"flex"}}><div style={{flex:acct.cashMarginFullyMarginable,background:C.blue}}/><div style={{flex:acct.cashMarginNonMarginable,background:C.orange}}/></div>
+              <div style={{display:"flex",gap:16,marginTop:6}}><span style={{fontSize:11,color:C.blue}}>● Fully marginable</span><span style={{fontSize:11,color:C.orange}}>● Non-marginable</span></div>
             </div>
-            <div style={{ height: 8, background: C.gray2, borderRadius: 4, overflow: "hidden", display: "flex" }}>
-              <div style={{ flex: acct.cashMarginFullyMarginable, background: C.blue }} />
-              <div style={{ flex: acct.cashMarginNonMarginable, background: C.orange }} />
-            </div>
-            <div style={{ display: "flex", gap: 16, marginTop: 6 }}>
-              <span style={{ fontSize: 11, color: C.blue }}>● Fully marginable</span>
-              <span style={{ fontSize: 11, color: C.orange }}>● Non-marginable</span>
-            </div>
-          </div>
+          )}
         </div>
-
-        {/* WealthScape */}
-        <div style={S.card}>
+        <div style={Scard}>
           <SectionHead>WealthScape Balances</SectionHead>
-          <DataRow label="Market Value" value={fmt(acct.marketValue)} positive tip="Total market value of all positions eligible for margin." />
-          <DataRow label="Margin Debit Balance" value={fmt(acct.marginDebit)} negative={acct.marginDebit > 0} positive={acct.marginDebit === 0} tip="Outstanding margin loan. Interest accrues daily on this amount." />
-          <DataRow label="Margin Equity" value={`${fmt(acct.marginEquity)} / ${pct(acct.marginEquityPct)}`} positive={acct.marginEquityPct > 30} negative={acct.marginEquityPct <= 30} tip="Market Value minus Margin Debit. Must stay above house requirement." />
-          <DataRow label="Interest Rate" value={pct(acct.interestRate)} tip="Current annual margin interest rate." />
-          <DataRow label="Pending Interest" value={fmt(acct.pendingMarginInterest)} negative={acct.pendingMarginInterest < 0} tip="Accrued interest not yet charged." />
-          <DataRow label="Buying Power" value={fmt(acct.buyingPowerMargin)} highlight positive tip="Total purchasing power including margin borrowing capacity." />
-
-          <div style={{ margin: "12px 0 4px", fontSize: 11, fontWeight: 700, color: C.gray4, textTransform: "uppercase", letterSpacing: "0.06em" }}>Surplus / Cushion</div>
-          <DataRow label="House Surplus" value={fmt(acct.houseSurplus)} positive={acct.houseSurplus > 0} negative={acct.houseSurplus < 0} tip="Equity above house maintenance requirement. Positive = cushion before a call." />
-          <DataRow label="Exchange Surplus" value={fmt(acct.exchangeSurplus)} positive={acct.exchangeSurplus > 0} tip="Equity above exchange maintenance requirement." />
-          <DataRow label="SMA" value={fmt(acct.smaSurplus)} positive tip="Special Memorandum Account — max additional purchasing power under Reg T." />
-
-          <div style={{ margin: "12px 0 4px", fontSize: 11, fontWeight: 700, color: C.gray4, textTransform: "uppercase", letterSpacing: "0.06em" }}>Requirements</div>
-          <DataRow label="DTC" value={fmt(acct.dtc)} tip="Depository Trust Company collateral requirement." />
-          <DataRow label="House Requirement" value={`${fmt(acct.houseReqDollar)} / ${pct(acct.houseReqPct)}`} negative={acct.marginEquity < acct.houseReqDollar} tip="Minimum equity your account must maintain." />
+          <DataRow label="Market Value" value={fmt(acct.marketValue)} positive tip="Total market value of all margin-eligible positions."/>
+          <DataRow label="Margin Debit Balance" value={fmt(acct.marginDebit)} negative={acct.marginDebit>0} positive={acct.marginDebit===0} tip="Outstanding margin loan. Interest accrues daily."/>
+          <DataRow label="Margin Equity" value={`${fmt(acct.marginEquity)} / ${pct(acct.marginEquityPct)}`} positive={acct.marginEquityPct>30} negative={acct.marginEquityPct<=30} tip="Market Value minus Margin Debit."/>
+          <DataRow label="Interest Rate" value={acct.interestRate?pct(acct.interestRate):"N/A"} tip="Current annual margin interest rate."/>
+          <DataRow label="Pending Interest" value={fmt(acct.pendingMarginInterest)} negative={acct.pendingMarginInterest<0} tip="Accrued interest not yet charged."/>
+          <DataRow label="Buying Power" value={fmt(acct.buyingPowerMargin)} highlight positive tip="Total purchasing power including margin borrowing."/>
+          <div style={{margin:"12px 0 4px",fontSize:11,fontWeight:700,color:C.gray4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Surplus / Cushion</div>
+          <DataRow label="House Surplus" value={fmt(acct.houseSurplus)} positive={acct.houseSurplus>0} negative={acct.houseSurplus<0} tip="Equity above house maintenance requirement."/>
+          <DataRow label="Exchange Surplus" value={fmt(acct.exchangeSurplus)} positive={acct.exchangeSurplus>0} tip="Equity above exchange maintenance requirement."/>
+          <DataRow label="SMA" value={fmt(acct.smaSurplus)} positive tip="Special Memorandum Account balance."/>
+          <div style={{margin:"12px 0 4px",fontSize:11,fontWeight:700,color:C.gray4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Requirements</div>
+          <DataRow label="DTC" value={fmt(acct.dtc)} tip="Depository Trust Company collateral requirement."/>
+          <DataRow label="House Requirement" value={`${fmt(acct.houseReqDollar)} / ${pct(acct.houseReqPct)}`} negative={acct.marginEquity<acct.houseReqDollar} tip="Minimum equity your account must maintain."/>
         </div>
       </div>
-
-      {/* Expandable requirements */}
-      <div style={S.card}>
-        <button onClick={() => setExpandReqs(e => !e)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, color: C.blue, fontWeight: 700, fontSize: 14, padding: 0 }}>
-          <span style={{ display: "inline-block", transform: expandReqs ? "rotate(90deg)" : "rotate(0deg)", transition: "0.2s" }}>▶</span>
-          Requirement Level Details
+      <div style={{...Scard,marginBottom:16}}>
+        <button onClick={()=>setExpandReqs(e=>!e)} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:8,color:C.blue,fontWeight:700,fontSize:14,padding:0}}>
+          <span style={{display:"inline-block",transform:expandReqs?"rotate(90deg)":"rotate(0deg)",transition:"0.2s"}}>▶</span> Requirement Level Details
         </button>
-        {expandReqs && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginTop: 18 }}>
-            {[["Reg T (Federal)", pct(acct.regT), "Initial requirement by the Federal Reserve. Applies at time of purchase."],
-              ["House Requirement", pct(acct.house), "PNC's ongoing maintenance requirement. Must be maintained at all times."],
-              ["Exchange Requirement", pct(acct.exchange), "Exchange-level minimum. May be higher for certain securities."]].map(([label, val, tip]) => (
+        {expandReqs&&(
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20,marginTop:18}}>
+            {[["Reg T (Federal)",pct(acct.regT),"Initial requirement by the Fed."],["House Requirement",pct(acct.house),"Ongoing maintenance requirement."],["Exchange Requirement",pct(acct.exchange),"Exchange-level minimum."]].map(([label,val,tip])=>(
               <div key={label}>
-                <div style={{ fontSize: 11, color: C.gray4, textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.06em", marginBottom: 8 }}>
-                  <Tip text={tip}><span style={{ borderBottom: `1px dotted ${C.gray3}`, cursor: "help" }}>{label}</span></Tip>
-                </div>
-                <div style={{ fontSize: 28, fontWeight: 700, color: C.navy, fontFamily: "monospace", marginBottom: 8 }}>{val}</div>
-                <div style={{ height: 6, background: C.gray2, borderRadius: 3 }}>
-                  <div style={{ height: 6, width: val, background: C.blue, borderRadius: 3 }} />
-                </div>
+                <div style={{fontSize:11,color:C.gray4,textTransform:"uppercase",fontWeight:600,letterSpacing:"0.06em",marginBottom:8}}><Tip text={tip}><span style={{borderBottom:`1px dotted ${C.gray3}`,cursor:"help"}}>{label}</span></Tip></div>
+                <div style={{fontSize:28,fontWeight:700,color:C.navy,fontFamily:"monospace",marginBottom:8}}>{val}</div>
+                <div style={{height:6,background:C.gray2,borderRadius:3}}><div style={{height:6,width:val,background:C.blue,borderRadius:3}}/></div>
               </div>
             ))}
           </div>
         )}
       </div>
-
-      {/* All accounts table */}
-      <div style={{ marginTop: 16 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: C.gray4, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>All Margin Accounts</div>
-        <div style={S.card}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ borderBottom: `2px solid ${C.border}` }}>
-                {["Account", "Market Value", "Debit", "Equity", "Equity %", "Rate"].map(h => (
-                  <th key={h} style={{ fontSize: 11, color: C.gray4, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", padding: "8px 12px", textAlign: h === "Account" ? "left" : "right" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.map((a, i) => (
-                <tr key={a.id} style={{ borderBottom: `1px solid ${C.gray2}`, background: a.id === acct.id ? C.blueLight : "transparent" }}>
-                  <td style={{ padding: "12px", fontSize: 13, fontWeight: 600, color: C.text }}>
-                    {a.name} <span style={{ color: C.gray4, fontWeight: 400 }}>{a.acctNum}</span>
-                    <div style={{ marginTop: 4, display: "flex", gap: 6 }}>
-                      {a.isDriver && <Badge color={C.blue}>DRIVER</Badge>}
-                      {a.hasCall && <Badge color={C.red}>CALL</Badge>}
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: 13, color: C.text }}>{fmt(a.marketValue)}</td>
-                  <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: 13, color: a.marginDebit > 0 ? C.red : C.green }}>{fmt(a.marginDebit)}</td>
-                  <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: 13, color: C.text }}>{fmt(a.marginEquity)}</td>
-                  <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: 13, color: a.marginEquityPct < 30 ? C.red : C.green }}>{pct(a.marginEquityPct)}</td>
-                  <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: 13, color: C.text }}>{pct(a.interestRate)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div style={{fontSize:11,fontWeight:700,color:C.gray4,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>All Accounts</div>
+      <div style={{...Scard,marginBottom:0}}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr style={{borderBottom:`2px solid ${C.border}`}}>{["Account","Market Value","Debit","Equity","Equity %","Rate"].map(h=><th key={h} style={{fontSize:11,color:C.gray4,fontWeight:600,textTransform:"uppercase",padding:"8px 12px",textAlign:h==="Account"?"left":"right"}}>{h}</th>)}</tr></thead>
+          <tbody>{accounts.map(a=>(
+            <tr key={a.id} style={{borderBottom:`1px solid ${C.gray2}`,background:a.id===acct.id?C.blueLight:"transparent"}}>
+              <td style={{padding:"12px",fontSize:13,fontWeight:600,color:C.text}}>{a.name} <span style={{color:C.gray4,fontWeight:400}}>{a.acctNum}</span><div style={{marginTop:4,display:"flex",gap:6}}>{a.isMarginAccount&&<Badge color={C.blue}>MARGIN</Badge>}{a.isDriver&&<Badge color={C.navy}>DRIVER</Badge>}{a.hasCall&&<Badge color={C.red}>CALL</Badge>}</div></td>
+              <td style={{padding:"12px",textAlign:"right",fontFamily:"monospace",fontSize:13}}>{fmt(a.marketValue)}</td>
+              <td style={{padding:"12px",textAlign:"right",fontFamily:"monospace",fontSize:13,color:a.marginDebit>0?C.red:C.green}}>{fmt(a.marginDebit)}</td>
+              <td style={{padding:"12px",textAlign:"right",fontFamily:"monospace",fontSize:13}}>{fmt(a.marginEquity)}</td>
+              <td style={{padding:"12px",textAlign:"right",fontFamily:"monospace",fontSize:13,color:a.marginEquityPct<30?C.red:C.green}}>{pct(a.marginEquityPct)}</td>
+              <td style={{padding:"12px",textAlign:"right",fontFamily:"monospace",fontSize:13}}>{a.interestRate?pct(a.interestRate):"—"}</td>
+            </tr>
+          ))}</tbody>
+        </table>
       </div>
-    </div>
-  );
-}
-
-// ── AVAILABLE CALLOUT ─────────────────────────────────────────────────────────
-function AvailableCallout({ acct }) {
-  const cash = acct.cshCRBal;
-  const marginSurplus = acct.hseSurpAmt;
-  const total = cash + marginSurplus;
-  const cashPct = total > 0 ? (cash / total) * 100 : 0;
-  const marginPct = total > 0 ? (marginSurplus / total) * 100 : 0;
-
-  return (
-    <div style={{ background: "linear-gradient(135deg, #003366 0%, #0069aa 100%)", borderRadius: 8, padding: "20px 24px", marginBottom: 20, color: C.white }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.7, marginBottom: 4 }}>Available for Transfer</div>
-          <div style={{ fontSize: 32, fontWeight: 700, fontFamily: "monospace", letterSpacing: "-1px" }}>{fmt(total)}</div>
-        </div>
-        <Tip text="Cash is always used first. Margin Surplus is accessed only after cash is exhausted and will incur interest charges.">
-          <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 6, padding: "6px 12px", fontSize: 11, cursor: "help", border: "1px solid rgba(255,255,255,0.25)" }}>
-            How is this calculated? ⓘ
-          </div>
-        </Tip>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", gap: 0, marginBottom: 16 }}>
-        <div style={{ paddingRight: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#7dd3fc" }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.8 }}>Cash Available</span>
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>{fmt(cash)}</div>
-          <div style={{ fontSize: 10, opacity: 0.6, marginTop: 3 }}>cshCRBal · No interest</div>
-        </div>
-        <div style={{ background: "rgba(255,255,255,0.2)", margin: "0 20px" }} />
-        <div style={{ paddingRight: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.orange }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.8 }}>Margin Surplus</span>
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 700, fontFamily: "monospace", color: "#fbbf24" }}>{fmt(marginSurplus)}</div>
-          <div style={{ fontSize: 10, opacity: 0.6, marginTop: 3 }}>hseSurpAmt · {acct.interestRate}% APR</div>
-        </div>
-        <div style={{ background: "rgba(255,255,255,0.2)", margin: "0 20px" }} />
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#6ee7b7" }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.8 }}>Total Available</span>
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 700, fontFamily: "monospace", color: "#6ee7b7" }}>{fmt(total)}</div>
-          <div style={{ fontSize: 10, opacity: 0.6, marginTop: 3 }}>Cash + Margin Surplus</div>
-        </div>
-      </div>
-
-      <div style={{ height: 6, background: "rgba(255,255,255,0.2)", borderRadius: 3, overflow: "hidden", display: "flex", marginBottom: 8 }}>
-        <div style={{ width: `${cashPct}%`, background: "#7dd3fc" }} />
-        <div style={{ width: `${marginPct}%`, background: C.orange }} />
-      </div>
-      <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
-        <span style={{ fontSize: 10, color: "#7dd3fc" }}>● Cash ({cashPct.toFixed(0)}%)</span>
-        <span style={{ fontSize: 10, color: C.orange }}>● Margin Surplus ({marginPct.toFixed(0)}%)</span>
-      </div>
-
-      <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 6, padding: "10px 14px", fontSize: 12, lineHeight: 1.5, opacity: 0.9 }}>
-        💡 <strong>Cash is used first.</strong> If your transfer exceeds <strong>{fmt(cash)}</strong>, the remainder draws from Margin Surplus at <strong>{acct.interestRate}% APR</strong>.
-      </div>
-    </div>
-  );
-}
-
-// ── TRANSFERS ─────────────────────────────────────────────────────────────────
-function Transfers({ acct }) {
-  const [step, setStep] = useState(1);
-  const [type, setType] = useState("dda-invest");
-  const [amount, setAmount] = useState("");
-  const [confirmed, setConfirmed] = useState(false);
-
-  const amt = parseFloat(amount) || 0;
-  const total = acct.cshCRBal + acct.hseSurpAmt;
-  const cashUsed = Math.min(amt, acct.cshCRBal);
-  const marginUsed = Math.max(0, amt - acct.cshCRBal);
-  const exceedsTotal = amt > total;
-  const newDebit = Math.max(0, acct.marginDebit - amt);
-  const debitReduced = acct.marginDebit - newDebit;
-
-  if (confirmed) {
-    return (
-      <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", padding: "40px 20px" }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.greenLight, border: `2px solid ${C.green}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 28 }}>✓</div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: C.navy, marginBottom: 6 }}>Transfer Submitted</div>
-        <div style={{ color: C.gray4, fontSize: 13, marginBottom: 24 }}>Confirmation #{Math.random().toString(36).slice(2, 10).toUpperCase()}</div>
-        <div style={{ ...S.card, textAlign: "left", marginBottom: 16 }}>
-          {[["Amount", fmt(amt)], ["From Cash", fmt(cashUsed)], ["From Margin Surplus", fmt(marginUsed)], ["Margin Debit After", fmt(newDebit)], ["Settlement", "1–3 business days"]].map(([l, v]) => (
-            <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.gray2}` }}>
-              <span style={{ fontSize: 13, color: C.gray5 }}>{l}</span>
-              <span style={{ fontSize: 13, fontWeight: 600, fontFamily: "monospace", color: C.text }}>{v}</span>
-            </div>
-          ))}
-        </div>
-        {marginUsed > 0 && <AlertBanner type="warning"><strong>{fmt(marginUsed)}</strong> drew from Margin Surplus and will accrue interest at {acct.interestRate}% APR.</AlertBanner>}
-        <button style={S.btn("primary")} onClick={() => { setStep(1); setAmount(""); setConfirmed(false); }}>Make Another Transfer</button>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ maxWidth: 620, margin: "0 auto" }}>
-      <div style={{ fontSize: 20, fontWeight: 700, color: C.navy, marginBottom: 4 }}>Move Money</div>
-      <div style={{ fontSize: 13, color: C.gray4, marginBottom: 20 }}>Transfer funds to or from your margin account</div>
-
-      {/* Step bar */}
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 24 }}>
-        {[1, 2, 3].map((s, i) => (
-          <div key={s} style={{ display: "flex", alignItems: "center", flex: s < 3 ? 1 : 0 }}>
-            <div style={{ width: 28, height: 28, borderRadius: "50%", background: step >= s ? C.blue : C.gray2, color: step >= s ? C.white : C.gray4, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{s}</div>
-            <span style={{ fontSize: 12, color: step === s ? C.blue : C.gray4, fontWeight: step === s ? 600 : 400, marginLeft: 6, marginRight: 6, whiteSpace: "nowrap" }}>{["Transfer Type", "Amount", "Confirm"][i]}</span>
-            {s < 3 && <div style={{ flex: 1, height: 2, background: step > s ? C.blue : C.gray2, marginRight: 6 }} />}
-          </div>
-        ))}
-      </div>
-
-      {step === 1 && (
-        <div>
-          <AvailableCallout acct={acct} />
-          <div style={S.card}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.navy, marginBottom: 14 }}>Select Transfer Type</div>
-            {[["dda-invest", "Checking → Investment", "Move cash from your bank account into this investment account"],
-              ["invest-dda", "Investment → Checking", "Withdraw funds from your investment account to your bank"],
-              ["internal", "Investment → Investment", "Move between your linked investment accounts"]].map(([val, label, desc]) => (
-              <div key={val} onClick={() => setType(val)} style={{ padding: "14px 16px", borderRadius: 6, marginBottom: 8, border: `2px solid ${type === val ? C.blue : C.border}`, background: type === val ? C.blueLight : C.white, cursor: "pointer", display: "flex", gap: 12, alignItems: "center" }}>
-                <div style={{ width: 16, height: 16, borderRadius: "50%", border: `2px solid ${type === val ? C.blue : C.gray3}`, background: type === val ? C.blue : C.white, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {type === val && <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.white }} />}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: type === val ? C.blue : C.text }}>{label}</div>
-                  <div style={{ fontSize: 12, color: C.gray4, marginTop: 2 }}>{desc}</div>
-                </div>
-              </div>
-            ))}
-            <div style={{ marginTop: 16 }}>
-              <button style={{ ...S.btn("primary"), width: "100%", justifyContent: "center" }} onClick={() => setStep(2)}>Continue →</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div>
-          <AvailableCallout acct={acct} />
-          <div style={S.card}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
-              <div>
-                <div style={S.label}>From</div>
-                <div style={{ background: C.gray1, border: `1px solid ${C.border}`, borderRadius: 6, padding: "10px 14px", fontSize: 13, color: C.text }}>
-                  {type === "invest-dda" || type === "internal" ? `${acct.name} ${acct.acctNum}` : "Checking ****4821"}
-                </div>
-              </div>
-              <div>
-                <div style={S.label}>To</div>
-                <div style={{ background: C.gray1, border: `1px solid ${C.border}`, borderRadius: 6, padding: "10px 14px", fontSize: 13, color: C.text }}>
-                  {type === "dda-invest" ? `${acct.name} ${acct.acctNum}` : type === "invest-dda" ? "Checking ****4821" : "Select account"}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 20 }}>
-              <div style={S.label}>Amount</div>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: C.gray4, fontSize: 18, fontWeight: 600 }}>$</span>
-                <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00"
-                  style={{ width: "100%", border: `2px solid ${exceedsTotal ? C.red : amt > 0 ? C.blue : C.border}`, borderRadius: 6, padding: "12px 14px 12px 30px", fontSize: 20, fontFamily: "monospace", fontWeight: 700, color: C.text, background: C.white, outline: "none", boxSizing: "border-box" }} />
-              </div>
-              {exceedsTotal && <div style={{ color: C.red, fontSize: 12, marginTop: 4 }}>⚠ Exceeds total available ({fmt(total)})</div>}
-            </div>
-
-            {/* Live breakdown */}
-            {amt > 0 && !exceedsTotal && (
-              <div style={{ background: C.gray1, borderRadius: 8, padding: "16px", marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: C.gray4, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Funding Breakdown</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
-                  {[["From Cash", fmt(cashUsed), "No interest", C.blue],
-                    ["From Margin Surplus", fmt(marginUsed), marginUsed > 0 ? `${acct.interestRate}% APR` : "None used", C.orange],
-                    ["Total Transfer", fmt(amt), "1–3 days", C.green]].map(([l, v, sub, color]) => (
-                    <div key={l} style={{ background: C.white, borderRadius: 6, padding: "10px 12px", border: `1px solid ${C.border}` }}>
-                      <div style={{ fontSize: 10, color: C.gray4, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>{l}</div>
-                      <div style={{ fontSize: 16, fontWeight: 700, fontFamily: "monospace", color }}>{v}</div>
-                      <div style={{ fontSize: 10, color: C.gray4, marginTop: 2 }}>{sub}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ height: 6, background: C.gray2, borderRadius: 3, overflow: "hidden", display: "flex" }}>
-                  <div style={{ width: `${(cashUsed / amt) * 100}%`, background: C.blue }} />
-                  <div style={{ width: `${(marginUsed / amt) * 100}%`, background: C.orange }} />
-                </div>
-
-                {acct.marginDebit > 0 && (
-                  <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: C.gray4, textTransform: "uppercase", marginBottom: 10 }}>Margin Debit Impact</div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                      {[["Current Debit", fmt(acct.marginDebit), C.red], ["Reduced By", `-${fmt(debitReduced)}`, C.green], ["After Transfer", fmt(newDebit), newDebit === 0 ? C.green : C.orange]].map(([l, v, c]) => (
-                        <div key={l}><div style={{ fontSize: 11, color: C.gray4 }}>{l}</div><div style={{ fontFamily: "monospace", fontSize: 14, fontWeight: 700, color: c }}>{v}</div></div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={S.btn("outline")} onClick={() => setStep(1)}>← Back</button>
-              <button style={{ ...S.btn(amt > 0 && !exceedsTotal ? "primary" : "outline"), flex: 1, justifyContent: "center", opacity: amt > 0 && !exceedsTotal ? 1 : 0.5 }}
-                onClick={() => amt > 0 && !exceedsTotal && setStep(3)}>Review Transfer →</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div style={S.card}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 16, paddingBottom: 12, borderBottom: `2px solid ${C.border}` }}>Confirm Transfer</div>
-          {[["From", type === "invest-dda" ? `${acct.name} ${acct.acctNum}` : "Checking ****4821"],
-            ["To", type === "dda-invest" ? `${acct.name} ${acct.acctNum}` : type === "invest-dda" ? "Checking ****4821" : "Linked Account"],
-            ["Total Amount", fmt(amt)],
-            ["  From Cash", fmt(cashUsed)],
-            ["  From Margin Surplus", fmt(marginUsed)],
-            ["Margin Debit After Transfer", fmt(newDebit)],
-            ["Estimated Settlement", "1–3 business days"]].map(([label, val]) => (
-            <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${C.gray2}`, paddingLeft: label.startsWith("  ") ? 16 : 0 }}>
-              <span style={{ fontSize: 13, color: label.startsWith("  ") ? C.gray4 : C.gray5 }}>{label.trim()}</span>
-              <span style={{ fontSize: 13, fontWeight: 600, fontFamily: "monospace", color: label.includes("Margin Surplus") && marginUsed > 0 ? C.orange : C.text }}>{val}</span>
-            </div>
-          ))}
-          {marginUsed > 0 && <div style={{ marginTop: 12 }}><AlertBanner type="warning"><strong>{fmt(marginUsed)}</strong> of this transfer uses Margin Surplus and will accrue interest at <strong>{acct.interestRate}% APR</strong>.</AlertBanner></div>}
-          <div style={{ fontSize: 11, color: C.gray4, marginTop: 12, lineHeight: 1.6 }}>By confirming you agree to applicable margin trading terms. Cash is applied first; margin borrowing applies only when cash is insufficient.</div>
-          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-            <button style={S.btn("outline")} onClick={() => setStep(2)}>← Edit</button>
-            <button style={{ ...S.btn("primary"), flex: 1, justifyContent: "center" }} onClick={() => setConfirmed(true)}>Confirm Transfer</button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── EDUCATION ─────────────────────────────────────────────────────────────────
-function Education() {
-  const [calc, setCalc] = useState({ equity: 10000, loanPct: 50, dropPct: 40 });
-  const maxPurchase = calc.equity / (calc.loanPct / 100);
-  const postDropValue = maxPurchase * (1 - calc.dropPct / 100);
-  const postDropEquity = postDropValue - (maxPurchase - calc.equity);
-  const postDropEquityPct = (postDropEquity / postDropValue) * 100;
-  const houseReq = 30;
-  const inCall = postDropEquityPct < houseReq;
-
-  return (
-    <div>
-      <div style={{ fontSize: 20, fontWeight: 700, color: C.navy, marginBottom: 4 }}>Margin Education</div>
-      <div style={{ fontSize: 13, color: C.gray4, marginBottom: 20 }}>Plain-language guides to help you understand margin investing</div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
-        {[["📊", "What is Margin?", "Margin lets you borrow against your portfolio to buy more securities. You pay interest on the borrowed amount.", C.blue],
-          ["⚡", "Buying Power", "Buying power = cash + what you can borrow. With Reg T at 50%, $10k cash gives you $20k buying power.", C.navy],
-          ["🚨", "Margin Calls", "When your equity falls below the house maintenance requirement (typically 30%), a margin call is issued requiring you to act.", C.red],
-          ["💸", "Transfers & Margin", "Depositing cash directly reduces your margin debit dollar-for-dollar, restoring buying power and reducing interest costs.", C.green]].map(([icon, title, body, accent]) => (
-          <div key={title} style={{ ...S.card, borderLeft: `4px solid ${accent}` }}>
-            <div style={{ fontSize: 24, marginBottom: 10 }}>{icon}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: C.navy, marginBottom: 8 }}>{title}</div>
-            <div style={{ fontSize: 13, color: C.gray5, lineHeight: 1.6 }}>{body}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Calculator */}
-      <div style={{ ...S.card, borderTop: `3px solid ${C.orange}` }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 4 }}>Interactive Calculator — Margin Call Scenario</div>
-        <div style={{ fontSize: 13, color: C.gray4, marginBottom: 20 }}>Adjust the sliders to see when a margin call would be triggered</div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 24 }}>
-          {[["Starting Cash Equity", "equity", "$", 1000, 100000, 500],
-            ["Reg T Initial Req (%)", "loanPct", "", 25, 100, 5],
-            ["Position Drop (%)", "dropPct", "", 0, 80, 5]].map(([label, key, prefix, min, max, step]) => (
-            <div key={key}>
-              <div style={S.label}>{label}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: C.navy, fontFamily: "monospace", marginBottom: 8 }}>
-                {prefix}{calc[key].toLocaleString()}{key !== "equity" ? "%" : ""}
-              </div>
-              <input type="range" min={min} max={max} step={step} value={calc[key]}
-                onChange={e => setCalc(c => ({ ...c, [key]: parseFloat(e.target.value) }))}
-                style={{ width: "100%", accentColor: C.blue, cursor: "pointer" }} />
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 16 }}>
-          {[["Max Purchase", fmt(maxPurchase), C.blue],
-            ["Value After Drop", fmt(postDropValue), C.gray5],
-            ["Equity After Drop", fmt(postDropEquity), postDropEquity < 0 ? C.red : C.green],
-            ["Equity %", `${postDropEquityPct.toFixed(1)}%`, inCall ? C.red : C.green]].map(([label, val, color]) => (
-            <div key={label} style={{ ...S.card, padding: "14px 16px", borderTop: `2px solid ${color}` }}>
-              <div style={S.label}>{label}</div>
-              <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "monospace", color }}>{val}</div>
-            </div>
-          ))}
-        </div>
-
-        {inCall
-          ? <AlertBanner type="error">⚠️ <strong>Margin Call!</strong> Equity ({postDropEquityPct.toFixed(1)}%) is below the {houseReq}% house requirement. You'd need to deposit {fmt(Math.abs(postDropEquity))} or sell positions.</AlertBanner>
-          : <AlertBanner type="info">✅ Equity ({postDropEquityPct.toFixed(1)}%) is above the {houseReq}% house requirement. No margin call at this scenario.</AlertBanner>
-        }
-      </div>
+      <EducationSection/>
     </div>
   );
 }
@@ -696,50 +635,29 @@ function Education() {
 export default function App() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [selectedAcct, setSelectedAcct] = useState(accounts[0]);
-
   return (
-    <div style={{ minHeight: "100vh", background: C.gray1, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: C.text }}>
-      <style>{`* { box-sizing: border-box; } input[type=range]{cursor:pointer} input[type=number]::-webkit-inner-spin-button{display:none} ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:${C.gray1}} ::-webkit-scrollbar-thumb{background:${C.gray3};border-radius:3px}`}</style>
-
-      {/* Top nav */}
-      <div style={{ background: `linear-gradient(135deg, ${C.navy} 0%, ${C.blue} 100%)`, padding: "0 32px", display: "flex", alignItems: "center", height: 60, gap: 24 }}>
-        <PNCLogo height={28} />
-        <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.25)" }} />
-        <select value={selectedAcct.id} onChange={e => setSelectedAcct(accounts.find(a => a.id === e.target.value))}
-          style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", color: C.white, borderRadius: 6, padding: "5px 12px", fontSize: 13, cursor: "pointer", outline: "none" }}>
-          {accounts.map(a => <option key={a.id} value={a.id} style={{ background: C.navy }}>{a.name} {a.acctNum}</option>)}
+    <div style={{minHeight:"100vh",background:C.gray1,fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",color:C.text}}>
+      <style>{`*{box-sizing:border-box}input[type=range]{cursor:pointer}input[type=number]::-webkit-inner-spin-button{display:none}`}</style>
+      <div style={{background:`linear-gradient(135deg, ${C.navy} 0%, ${C.blue} 100%)`,padding:"0 32px",display:"flex",alignItems:"center",height:60,gap:24}}>
+        <PNCLogo height={26}/>
+        <div style={{width:1,height:28,background:"rgba(255,255,255,0.25)"}}/>
+        <select value={selectedAcct.id} onChange={e=>setSelectedAcct(accounts.find(a=>a.id===e.target.value))} style={{background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.25)",color:C.white,borderRadius:6,padding:"5px 12px",fontSize:13,cursor:"pointer",outline:"none"}}>
+          {accounts.map(a=><option key={a.id} value={a.id} style={{background:C.navy}}>{a.name} {a.acctNum}</option>)}
         </select>
-        <div style={{ flex: 1 }} />
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Total Portfolio</div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: C.white, fontFamily: "monospace" }}>{fmt(accounts.reduce((s, a) => s + a.marketValue, 0))}</div>
+        <div style={{flex:1}}/>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontSize:11,color:"rgba(255,255,255,0.6)",letterSpacing:"0.06em",textTransform:"uppercase"}}>Total Portfolio</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.white,fontFamily:"monospace"}}>{fmt(accounts.reduce((s,a)=>s+a.marketValue,0))}</div>
         </div>
-        {selectedAcct.hasCall && (
-          <div onClick={() => setActiveTab("Margin Profile")} style={{ background: C.red, color: C.white, borderRadius: 20, padding: "5px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", letterSpacing: "0.04em" }}>
-            ⚠ MARGIN CALL
-          </div>
-        )}
+        {selectedAcct.hasCall&&<div onClick={()=>setActiveTab("Margin Profile")} style={{background:C.red,color:C.white,borderRadius:20,padding:"5px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}}>⚠ MARGIN CALL</div>}
       </div>
-
-      {/* Tab bar */}
-      <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "0 32px", display: "flex", gap: 0 }}>
-        {tabs.map(t => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{
-            background: "none", border: "none", cursor: "pointer",
-            padding: "14px 20px", fontSize: 14, fontWeight: activeTab === t ? 700 : 400,
-            color: activeTab === t ? C.blue : C.gray5,
-            borderBottom: activeTab === t ? `3px solid ${C.orange}` : "3px solid transparent",
-            transition: "all 0.15s",
-          }}>{t}</button>
-        ))}
+      <div style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:"0 32px",display:"flex"}}>
+        {tabs.map(t=><button key={t} onClick={()=>setActiveTab(t)} style={{background:"none",border:"none",cursor:"pointer",padding:"14px 20px",fontSize:14,fontWeight:activeTab===t?700:400,color:activeTab===t?C.blue:C.gray5,borderBottom:activeTab===t?`3px solid ${C.orange}`:"3px solid transparent",transition:"all 0.15s"}}>{t}</button>)}
       </div>
-
-      {/* Page content */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px" }}>
-        {activeTab === "Dashboard" && <Dashboard acct={selectedAcct} setTab={setActiveTab} />}
-        {activeTab === "Margin Profile" && <MarginProfile acct={selectedAcct} setTab={setActiveTab} />}
-        {activeTab === "Transfers" && <Transfers acct={selectedAcct} />}
-        {activeTab === "Education" && <Education />}
+      <div style={{maxWidth:1200,margin:"0 auto",padding:"28px 32px"}}>
+        {activeTab==="Dashboard"&&<Dashboard acct={selectedAcct} setTab={setActiveTab}/>}
+        {activeTab==="Margin Profile"&&<MarginProfile acct={selectedAcct} setTab={setActiveTab}/>}
+        {activeTab==="Transfers"&&<Transfers acct={selectedAcct}/>}
       </div>
     </div>
   );
